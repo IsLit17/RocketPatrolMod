@@ -2,9 +2,10 @@
 Modded version of Rocket Patrol Game.
 
 ## Project Details
-Name: Sheel Kulkarni
-Date: April 18, 2022
-This assignment took me around 12 hours.
+    Name: Sheel Kulkarni
+    Assignment: Rocket Patrol Mods
+    Date: April 18, 2022
+    Length: Around 12 hours.
 
 ## Features
 - Player can control the Rocket after it's fired
