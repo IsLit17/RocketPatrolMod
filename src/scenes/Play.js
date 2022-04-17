@@ -1,3 +1,4 @@
+let count = 0
 class Play extends Phaser.Scene {
     constructor() {
         super("playScene");
@@ -5,8 +6,9 @@ class Play extends Phaser.Scene {
 
     preload() {
         // load images/tile sprites
-        this.load.image('rocket', './assets/rocket.png');
-        this.load.image('spaceship', './assets/spaceship.png');
+        this.load.image('rocket1', './assets/rocket.png');
+        this.load.image('rocket2', './assets/rocket2.png');
+        this.load.image('spaceship', './assets/alien.png');
         this.load.image('starfield', './assets/starfield.png');
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
@@ -33,10 +35,9 @@ class Play extends Phaser.Scene {
         keyL = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.L); // player 2 fire
 
         // add rocket (p1)
-        this.p1Rocket = new Rocket(this, game.config.width/3, game.config.height - borderUISize - borderPadding, 'rocket', keyLEFT, keyRIGHT, keyL).setOrigin(0.5, 0);
+        this.p1Rocket = new Rocket(this, game.config.width/3, game.config.height - borderUISize - borderPadding, 'rocket1', 0, keyA, keyS, keyF).setOrigin(0.5, 0);
         // add rocket (p2)
-        this.p2Rocket = new Rocket(this, (2*game.config.width)/3, game.config.height - borderUISize - borderPadding, 'rocket', keyLEFT, keyRIGHT, keyF).setOrigin(0.5, 0);
-        //console.log(this.p2Rocket);
+        this.p2Rocket = new Rocket(this, (2*game.config.width)/3, game.config.height - borderUISize - borderPadding, 'rocket2', 0, keyLEFT, keyRIGHT, keyL).setOrigin(0.5, 0);
 
         // add spaceships (x3)
         this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
@@ -63,12 +64,34 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 100
         }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Rocket.score, scoreConfig); // p1
-        this.scoreRight = this.add.text(borderUISize + borderPadding*40, borderUISize + borderPadding*2, this.p2Rocket.score, scoreConfig); // p2
+        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, 'P1: ' + this.p1Rocket.score, scoreConfig); // p1
+        this.scoreRight = this.add.text(borderUISize + borderPadding * 45, borderUISize + borderPadding*2, 'P2: ' + this.p2Rocket.score, scoreConfig); // p2
         this.gameOver = false; // game over flag
         scoreConfig.fixedWidth = 0;
 
-        // to display clock on the screen
+        // 60-second play clock
+        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
+            if (this.p1Rocket.score > this.p2Rocket.score) {
+                this.add.text(game.config.width/2, game.config.height/2, 'Player 1 Wins', scoreConfig).setOrigin(0.5);
+            }
+            else if (this.p1Rocket.score < this.p2Rocket.score) {
+                this.add.text(game.config.width/2, game.config.height/2, 'Player 2 Wins', scoreConfig).setOrigin(0.5);
+            }
+            else {
+                this.add.text(game.config.width/2, game.config.height/2, 'TIE GAME', scoreConfig).setOrigin(0.5);
+            }
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', scoreConfig).setOrigin(0.5);
+            if (this.p1Rocket.score > highScore) {
+                highScore = this.p1Rocket.score;
+            }
+            if (this.p2Rocket.score > highScore) {
+                highScore = this.p2Rocket.score;
+            }
+            this.add.text(game.config.width/2, game.config.height/2 + 64 + 64, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
+            this.gameOver = true;
+        }, null, this);
+
+        // to display remaining time on the screen
         let clockConfig = {
             fontFamily: 'Courier',
             fontSize: '28px',
@@ -81,31 +104,20 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 310
         }
-        let remainingTime = Math.round(game.settings.gameTimer * 0.001);
-        this.clockText = this.add.text(borderUISize + borderPadding*15, borderUISize + borderPadding*2, 'Time Remainig: ' + remainingTime, clockConfig);
-        /*for (let i = 1; i <= (game.settings.gameTimer/1000); i++) {
-            this.time.delayedCall(1000, () => {
-                remainingTime -= 1;
-                console.log(remainingTime);
-                this.clockText.setText('Time Remaining: ' + remainingTime);
-            }, null, this);
-        }*/
+        this.remainingTime = game.settings.gameTimer * 0.001;
+        this.maxTime = this.remainingTime;
+        this.clockText = this.add.text(borderUISize + borderPadding*15, borderUISize + borderPadding*2, 'Time Remainig: ' + 
+        this.remainingTime, clockConfig);
 
-        let timedEvent = this.time.addEvent({ delay: 6000000, callback: this.onClockEvent, callbackScope: this, repeat: 1 }); 
-        this.clockText.setText('Time Remaining: ' + timedEvent.getElapsedSeconds().toString().substr(0, 4));
-        // 60-second play clock
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or <- for Menu', scoreConfig).setOrigin(0.5);
-            if (this.p1Rocket.score > highScore) {
-                highScore = this.p1Rocket.score;
-            }
-            if (this.p2Rocket.score > highScore) {
-                highScore = this.p2Rocket.score;
-            }
-            this.add.text(game.config.width/2, game.config.height/2 + 64 + 64, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-        }, null, this);
+        this.showTime = this.time.addEvent({
+            delay: 1000,                // ms
+            callback: this.updateTime(),
+            callbackScope: this,
+            loop: true,
+            repeat: this.maxTime
+        });
+
+        //this.showTime = this.time.delayedCall(1000, this.updateTime(), null, this);
     }
 
     update() {
@@ -119,10 +131,12 @@ class Play extends Phaser.Scene {
         
         // check R key for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+            count = 0;
             this.scene.restart();
         }
         // check <- key for menu scene
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            count = 0;
             this.scene.start("menuScene");
         }
         this.starfield.tilePositionX -= 4;
@@ -185,8 +199,20 @@ class Play extends Phaser.Scene {
           boom.destroy();                       // remove explosion sprite
         });
         rocket.updateScore(ship.points);
-        this.scoreLeft.text = this.p1Rocket.score;
-        this.scoreRight.text = this.p2Rocket.score;
+        this.scoreLeft.text = 'P1: ' + this.p1Rocket.score;
+        this.scoreRight.text = 'P2: ' + this.p2Rocket.score;
         this.sound.play('sfx_explosion');
     }
+
+    updateTime() { // function to help show time
+        this.remainingTime -= 1;
+        this.clockText.setText('Time Remaining: ' + this.remainingTime);
+        console.log(this.remainingTime);
+    }
+        // if (count < maxTime) {
+        //     count += 1;
+        //     this.remainingTime -= 1;
+        //     this.clockText.setText('Time Remaining: ' + this.remainingTime);
+        //     this.time.delayedCall(1000, this.updateTime(), null, this);
+        // }
 }
