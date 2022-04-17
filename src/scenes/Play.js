@@ -9,6 +9,7 @@ class Play extends Phaser.Scene {
         this.load.image('rocket1', './assets/rocket.png');
         this.load.image('rocket2', './assets/rocket2.png');
         this.load.image('spaceship', './assets/alien.png');
+        this.load.image('spaceship2', './assets/alien2.png');
         this.load.image('starfield', './assets/starfield.png');
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion2.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
@@ -40,9 +41,11 @@ class Play extends Phaser.Scene {
         this.p2Rocket = new Rocket(this, (2*game.config.width)/3, game.config.height - borderUISize - borderPadding, 'rocket2', 0, keyLEFT, keyRIGHT, keyL).setOrigin(0.5, 0);
 
         // add spaceships (x3)
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0,0);
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
+        let shipSpeed = game.settings.spaceshipSpeed;
+        this.shipNew = new Spaceship(this, game.config.width + borderUISize*9, borderUISize*4, 'spaceship2', 0, 50, 5).setOrigin(0, 0);
+        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*5 + borderPadding*2, 'spaceship', 0, 30, shipSpeed).setOrigin(0, 0);
+        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*6 + borderPadding*4, 'spaceship', 0, 20, shipSpeed).setOrigin(0,0);
+        this.ship03 = new Spaceship(this, game.config.width, borderUISize*7 + borderPadding*6, 'spaceship', 0, 10, shipSpeed).setOrigin(0,0);
 
         // animation
         this.anims.create({
@@ -54,10 +57,10 @@ class Play extends Phaser.Scene {
         // display score
         let scoreConfig = {
             fontFamily: 'Courier',
-            fontSize: '28px',
+            fontSize: '25px',
             backgroundColor: '#F3B141',
             color: '#843605',
-            align: 'right',
+            align: 'left',
             padding: {
             top: 5,
             bottom: 5,
@@ -65,7 +68,7 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, 'P1: ' + this.p1Rocket.score, scoreConfig); // p1
-        this.scoreRight = this.add.text(borderUISize + borderPadding * 45, borderUISize + borderPadding*2, 'P2: ' + this.p2Rocket.score, scoreConfig); // p2
+        this.scoreRight = this.add.text(borderUISize + borderPadding * 42.5, borderUISize + borderPadding*2, 'P2: ' + this.p2Rocket.score, scoreConfig); // p2
         this.gameOver = false; // game over flag
         scoreConfig.fixedWidth = 0;
 
@@ -104,20 +107,21 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 310
         }
-        this.remainingTime = game.settings.gameTimer * 0.001;
+        this.remainingTime = game.settings.gameTimer / 1000;
         this.maxTime = this.remainingTime;
-        this.clockText = this.add.text(borderUISize + borderPadding*15, borderUISize + borderPadding*2, 'Time Remainig: ' + 
-        this.remainingTime, clockConfig);
+        this.clockText = this.add.text(borderUISize + borderPadding*12, borderUISize + borderPadding*2, 'Time Remainig: ' + this.remainingTime, clockConfig);
+        this.remainingTime -= this.clock.getElapsedSeconds();
+        this.clockText.setText('Time Remaining: ' + this.remainingTime);
 
-        this.showTime = this.time.addEvent({
-            delay: 1000,                // ms
-            callback: this.updateTime(),
-            callbackScope: this,
-            loop: true,
-            repeat: this.maxTime
-        });
+        //this.showTime = this.time.delayedCall(5000, this.updateTime(), null, this);
 
-        //this.showTime = this.time.delayedCall(1000, this.updateTime(), null, this);
+        // this.showTime = this.time.addEvent({
+        //     delay: 1000,                // ms
+        //     callback: this.updateTime(),
+        //     callbackScope: this,
+        //     loop: true,
+        //     repeat: this.maxTime
+        // });
     }
 
     update() {
@@ -146,6 +150,7 @@ class Play extends Phaser.Scene {
             this.ship01.update();
             this.ship02.update();
             this.ship03.update();
+            this.shipNew.update();
         }
         // check collisions p1
         if(this.checkCollision(this.p1Rocket, this.ship03)) {
@@ -160,6 +165,10 @@ class Play extends Phaser.Scene {
             this.p1Rocket.reset();
             this.shipExplode(this.p1Rocket, this.ship01);
         }
+        if (this.checkCollision(this.p1Rocket, this.shipNew)) {
+            this.p1Rocket.reset();
+            this.shipExplode(this.p1Rocket, this.shipNew);
+        }
 
         //check collisions p2
         if(this.checkCollision(this.p2Rocket, this.ship03)) {
@@ -173,6 +182,10 @@ class Play extends Phaser.Scene {
         if (this.checkCollision(this.p2Rocket, this.ship01)) {
             this.p2Rocket.reset();
             this.shipExplode(this.p2Rocket, this.ship01);
+        }
+        if (this.checkCollision(this.p2Rocket, this.shipNew)) {
+            this.p2Rocket.reset();
+            this.shipExplode(this.p2Rocket, this.shipNew);
         }
     }
 
@@ -205,14 +218,16 @@ class Play extends Phaser.Scene {
     }
 
     updateTime() { // function to help show time
-        this.remainingTime -= 1;
-        this.clockText.setText('Time Remaining: ' + this.remainingTime);
-        console.log(this.remainingTime);
-    }
-        // if (count < maxTime) {
+        // if (count < this.maxTime) {
         //     count += 1;
         //     this.remainingTime -= 1;
+        //     console.log(this.remainingTime);
         //     this.clockText.setText('Time Remaining: ' + this.remainingTime);
         //     this.time.delayedCall(1000, this.updateTime(), null, this);
         // }
+    }
+
+    // this.remainingTime -= 1;
+    //     this.clockText.setText('Time Remaining: ' + this.remainingTime);
+    //     console.log(this.remainingTime);
 }

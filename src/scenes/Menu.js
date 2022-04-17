@@ -8,16 +8,17 @@ class Menu extends Phaser.Scene {
         this.load.audio('sfx_select', './assets/blip_select12.wav');
         this.load.audio('sfx_explosion', './assets/explosion38.wav');
         this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
+        this.load.image('menu', './assets/menu.png');
     }
 
     create() {
         //this.add.text(20, 20, "Rocket Patrol Menu");
         //this.scene.start("playScene");
+        this.cover = this.add.image(0, 0, 'menu').setOrigin(0, 0);
         let menuConfig = {
             fontFamily: 'Courier',
             fontSize: '21px',
-            backgroundColor: '#F3B141',
-            color: '#843605',
+            color: '#ffc107',
             align: 'right',
             padding: {
             top: 5,
@@ -26,18 +27,8 @@ class Menu extends Phaser.Scene {
             fixedWidth: 0
         }
 
-        // show menu text
-        this.add.text(game.config.width/2, game.config.height/2 - borderUISize - 
-        borderPadding, 'ROCKET PATROL', menuConfig).setOrigin(0.5);
-        this.add.text(game.config.width/2, game.config.height/2, 'Player 1: Use (A) & (S) to move & (F) to fire', menuConfig).setOrigin(0.5);
-        this.add.text(game.config.width/2, game.config.height/2 + borderUISize + 
-        borderPadding, 'Player 2: Use <--> arrows to move & (L) to fire', menuConfig).setOrigin(0.5);
-        menuConfig.backgroundColor = '#00FF00';
-        menuConfig.color = '#000';
-        this.add.text(game.config.width/2, game.config.height/2 + borderUISize + 
-        (borderPadding * 5), 'Press <- for Novice or -> for Expert', menuConfig).setOrigin(0.5);
-        this.add.text(game.config.width/2, game.config.height/2 + borderUISize + 
-        (borderPadding * 10), 'High Score: ' + highScore, menuConfig).setOrigin(0.5);
+        // show high score
+        this.add.text(game.config.width/6, game.config.height/2 + borderUISize + borderPadding, 'High Score: ' + highScore, menuConfig).setOrigin(0.5);
 
         // define keys
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
