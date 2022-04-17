@@ -11,20 +11,17 @@ class Play extends Phaser.Scene {
         this.load.image('spaceship', './assets/alien.png');
         this.load.image('spaceship2', './assets/alien2.png');
         this.load.image('starfield', './assets/starfield.png');
+        this.load.image('starfield2', './assets/starfield2.png');
         // load spritesheet
         this.load.spritesheet('explosion', './assets/explosion2.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
     }
 
     create() {
         // place tile sprite
-        this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0);
-        // green UI background
-        this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
-        // white borders
-        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
+        this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield2').setOrigin(0, 0);
+
+        // bottom background
         this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
-        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
-        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
         // define keys
         keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F); // player 1 fire
@@ -47,6 +44,14 @@ class Play extends Phaser.Scene {
         this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*6 + borderPadding*4, 'spaceship', 0, 20, shipSpeed).setOrigin(0,0);
         this.ship03 = new Spaceship(this, game.config.width, borderUISize*7 + borderPadding*6, 'spaceship', 0, 10, shipSpeed).setOrigin(0,0);
 
+        // green UI background
+        this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
+        // white borders except for bottom
+        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
+        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
+        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
+
+
         // animation
         this.anims.create({
             key: 'explode',
@@ -60,15 +65,15 @@ class Play extends Phaser.Scene {
             fontSize: '25px',
             backgroundColor: '#F3B141',
             color: '#843605',
-            align: 'left',
+            align: 'center',
             padding: {
             top: 5,
             bottom: 5,
             },
-            fixedWidth: 100
+            fixedWidth: 150
         }
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, 'P1: ' + this.p1Rocket.score, scoreConfig); // p1
-        this.scoreRight = this.add.text(borderUISize + borderPadding * 42.5, borderUISize + borderPadding*2, 'P2: ' + this.p2Rocket.score, scoreConfig); // p2
+        this.scoreRight = this.add.text(borderUISize + borderPadding * 39, borderUISize + borderPadding*2, 'P2: ' + this.p2Rocket.score, scoreConfig); // p2
         this.gameOver = false; // game over flag
         scoreConfig.fixedWidth = 0;
 
@@ -93,46 +98,9 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2 + 64 + 64, 'High Score: ' + highScore, scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
-
-        // to display remaining time on the screen
-        let clockConfig = {
-            fontFamily: 'Courier',
-            fontSize: '28px',
-            backgroundColor: '#F3B141',
-            color: '#843605',
-            align: 'left',
-            padding: {
-            top: 5,
-            bottom: 5,
-            },
-            fixedWidth: 310
-        }
-        this.remainingTime = game.settings.gameTimer / 1000;
-        this.maxTime = this.remainingTime;
-        this.clockText = this.add.text(borderUISize + borderPadding*12, borderUISize + borderPadding*2, 'Time Remainig: ' + this.remainingTime, clockConfig);
-        this.remainingTime -= this.clock.getElapsedSeconds();
-        this.clockText.setText('Time Remaining: ' + this.remainingTime);
-
-        //this.showTime = this.time.delayedCall(5000, this.updateTime(), null, this);
-
-        // this.showTime = this.time.addEvent({
-        //     delay: 1000,                // ms
-        //     callback: this.updateTime(),
-        //     callbackScope: this,
-        //     loop: true,
-        //     repeat: this.maxTime
-        // });
     }
 
     update() {
-        /*let runtime = Math.round(seconds * 0.001);
-        let maxTime = Math.round(game.settings.gameTimer * 0.001);
-        let remainingTime = maxTime - runtime;
-        if (remainingTime <= 0) {
-            remainingTime = 0;
-        }
-        this.clockText.setText('Time Remaining: ' + remainingTime);*/
-        
         // check R key for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
             count = 0;
@@ -216,18 +184,4 @@ class Play extends Phaser.Scene {
         this.scoreRight.text = 'P2: ' + this.p2Rocket.score;
         this.sound.play('sfx_explosion');
     }
-
-    updateTime() { // function to help show time
-        // if (count < this.maxTime) {
-        //     count += 1;
-        //     this.remainingTime -= 1;
-        //     console.log(this.remainingTime);
-        //     this.clockText.setText('Time Remaining: ' + this.remainingTime);
-        //     this.time.delayedCall(1000, this.updateTime(), null, this);
-        // }
-    }
-
-    // this.remainingTime -= 1;
-    //     this.clockText.setText('Time Remaining: ' + this.remainingTime);
-    //     console.log(this.remainingTime);
 }

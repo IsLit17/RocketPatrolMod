@@ -1,10 +1,16 @@
-// main.js
-// Total points = 90
+// Sheel Kulkarni, shgkulka
+// Rocket Patrol Mods
+// April 18, 2022
+// This assignment took me around 12 hours
+
+// Mod Total points = 100
 // mod 1: Allow the player to control the Rocket after it's fired (5) c
-// mod 2: Display the time remaining (in seconds) on the screen (10)
+// mod 2: Implement parallax scrolling (10) c
 // mod 3: Create a new spaceship type (w/ new artwork) that's smaller, moves faster, and is worth more points (20) c
 // mod 4: Create new artwork for all of the in-game assets (rocket, spaceships, explosion) (20) c
 // mod 5: Implement a simultaneous two-player mode (30) c
+//         - player 1 uses A & S to move and F to fire
+//         - player 2 uses <--> to move and L to fire
 // mod 6: Track a high score that persists across scenes and display it in the UI (5) c
 // mod 7: Create a new title screen (e.g., new artwork, typography, layout) (10) c
 
